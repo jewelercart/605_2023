@@ -1,0 +1,19 @@
+---
+title: "lab1"
+author: "Frederick Jones"
+output: html_document
+date: "2023-09-04"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+xcurve <- c(seq(1, 1.4, length.out=3000))
+ycurve <- -sqrt(0.2^2-(xcurve-1.2)^2)-0.7
+x=c(rep(0,500),seq(0,0.5,length.out=500), seq(0,0.75,length.out=1000), seq(1,1.75,length.out=1000), rep(1.4,500), xcurve)
+y=c(seq(-1,1,length.out=500),rep(0, 500), rep(1, 1000), rep(1, 1000), seq(-0.75,1,length.out=500), ycurve)
+#z=rbind(x,y)
+plot(y~x, xlim=c(-3,3), ylim=c(-3,3))
+```
