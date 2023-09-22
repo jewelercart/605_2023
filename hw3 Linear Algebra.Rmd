@@ -1,0 +1,57 @@
+---
+title: "HW3 Linear Algebra"
+author: "Frederick Jones"
+date: "2023-09-17"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Problem Set 1
+## R Q1. 
+Solution. 
+
+
+```{r}
+A <- matrix(c(1, -1, 0, 5, 2, 0, 1, 4, 3, 1, -2, -2, 4, 3, 1, -3), nrow = 4,ncol = 4)
+print(A)
+
+```
+```{r}
+r<-Matrix::rankMatrix(A)
+sprintf('Rank of the matrix A is %d', r)
+```
+## Q.2
+Answer. It's given that the number of rows m is greater than number of columns n i.e., m>n.<br>
+We know that rank(A)$\le$ min{m, n}<br>
+Since n < m therefore min{m, n}=n<br>
+Hence, maximum rank of matrix such that m>n is n. <br>
+and the minimum possible rank of any non-zero matrix is 1 but rank of a null matrix is zero. 
+
+## Q3. 
+
+```{r}
+B <- matrix(c(1, 3, 2, 2, 6, 4, 1, 3, 2), nrow = 3, ncol = 3)
+print(B)
+```
+
+```{r}
+rB<-Matrix::rankMatrix(B)
+sprintf('Rank of the matrix B is %d', rB)
+```
+# Problem Set 2
+## Q3. 
+```{r}
+A<- matrix(c(1, 0, 0, 2, 4, 0, 3, 5, 6), nrow = 3, ncol = 3)
+A
+```
+
+```{r}
+eig_values <- eigen(A)
+print("Eigen values are :")
+print(eig_values[1])
+```
+
