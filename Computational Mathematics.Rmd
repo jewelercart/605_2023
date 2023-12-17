@@ -1,0 +1,350 @@
+---
+title: "Computational Mathematics"
+author: "Fredrick Jones"
+date: "2023-12-15"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Problem 1
+
+### Task1
+
+Calculate as a minimum the below probabilities a through c. Assume the small letter "x" is estimated as the median of the X variable, and the small letter "y" is estimated as the median of the Y variable.
+
+Generating 10,000 uniform numbers between 5 and 15. Also, generating 10,000 numbers from normal distribution with mean 10 and standard deviation 2.89
+
+```{r}
+library(tidyverse)
+library(openintro)
+library(Matrix)
+library(MASS)
+set.seed(1234)
+X<- runif(10000, min = 5, max = 15)
+Y <- rnorm(10000, mean=10, sd=2.89)
+```
+
+Let's visulize the data so genrated
+
+```{r}
+hist(X)
+```
+
+```{r}
+hist(Y)
+```
+
+**a. P(X\>x\| X\>y) where x and y are medians of X and Y respectively**
+
+```{r}
+x<- median(X)
+y<- median(Y)
+data<- tibble(X_greater_x_or_y= ifelse(X>x|X>y, "yes", "no"), 
+              X=X)
+pr <- data %>% 
+  count(X_greater_x_or_y)%>%
+  mutate(p_hat = n/sum(n))
+pr
+```
+
+It can be observed that P(X\>x \| X\>y) = 0.5
+
+Interpretation: The probability suggests that out of 10000 uniformly generated numbers between 5 and 15, 50% i.e. 5000 are greater than median of X or greater than median of Y.
+
+**b. P(X\>x & Y\>y)**
+
+```{r}
+data2<- tibble(X_gr_x_and_Y_gr_y= ifelse(X>x & Y>y, "yes", "no"), 
+              X=X, Y=Y)
+pr <- data2 %>% 
+  count(X_gr_x_and_Y_gr_y)%>%
+  mutate(p_hat = n/sum(n))
+pr
+```
+
+It can be seen that the probability P(X\>x & Y\>y)= 0.2507
+
+Interpretation: It is observed that in 10,000 cases of X and Y, there are 2507 or 25.07% cases in which X is greater than x and Y is greater than Y.
+
+**c. P(X\<x \| X\>y)**
+
+```{r}
+data3<- tibble(X_less_x_or_X_gr_y= ifelse(X<x | X>y, "yes", "no"), 
+              X=X)
+pr <- data3 %>% 
+  count(X_less_x_or_X_gr_y)%>%
+  mutate(p_hat = n/sum(n))
+pr
+```
+
+It can be seen that P(X\<x \| X\>y) = 0.9979
+
+Interpretation: The probability suggests that for X: uniform distribution between 5 and 15 and Y: normal distribution with mean =10 and standard deviation = 2.89; 99.79% generated uniform random numbers are either less than the median of X or greater than the median of Y.
+
+### Task 2
+
+Investigate whether P(X\>x & Y\>y)=P(X\>x)P(Y\>y) by building a table and evaluating the marginal and joint probabilities.
+
+**Joint Table**
+
+```{r}
+j_table <- table(X>x, Y>y)
+j_table
+
+```
+
+**Marginal probabilities**
+
+```{r}
+mar_X <- rowSums(j_table)/sum(j_table)
+mar_Y <- colSums(j_table)/sum(j_table)
+cat("Marginal probability of X>x : ", mar_X)
+cat("\nMarginal probability of Y>y:", mar_Y)
+```
+
+**Product of marginal probabilities**
+
+```{r}
+product_marginal <- outer(mar_X, mar_Y)
+product_marginal
+```
+
+It can be observed that the p(X\>x)\*p(Y\>y) = 0.25, that is the product of marginal probabilities is 0.25 from part from the part b. the probability p(X\>x & Y\>y) is 0.2507 which is almost the equal.
+
+So, we can conclude that p(X\>x & Y\>y) = p(X\>x)\*p(Y\>y)
+
+Thus, even X\>x and Y\>y are two independent events.
+
+### Task 3
+
+Check to see if independence holds by using Fisher\'s Exact Test and the Chi Square Test.  What is the difference between the two? Which is most appropriate?  Are you surprised at the results?  Why or why not?
+
+**Fisher's Exact test**
+
+```{r}
+fisher_output <- fisher.test(j_table)
+fisher_output
+```
+
+**Interpretation of Fisher's exact test p-value (0.7949):**
+
+This is the probability of observing a table as extreme as the calculated table, assuming the null hypothesis of independence is true. A higher p-value indicates weaker evidence against the null hypothesis.
+
+Odds Ratio (1.011264): Odds Ratio measures the relationship between X and Y. A value of 1 means no relationship. The 95% confidence interval indicates the range within which you can be reasonably confident of the true odds ratio.
+
+**Chi-Square Test**
+
+```{r}
+chi_sq_output<- chisq.test(j_table)
+chi_sq_output
+```
+
+**Chi-square test interpretation p-value (0.7949):** Similar to Fisher's exact test, this p-value represents the probability of observing the table assuming independence.
+
+Chi-square statistic (0.0676): This statistic measures the difference between the observed and expected frequencies. Lower values ​​indicate that the observed and expected frequencies are more similar.
+
+**Difference between Fisher's exact test and chi-square test:**
+
+Fisher's exact test: This test is suitable when the sample size is small and provides an accurate probability of observing the data assuming independence.
+
+**Which to choose:**
+
+Chi-square test: suitable for larger samples and based on asymptotic theory. The chi-square test is an approximation, but the larger the dataset, the less computationally intensive it is.
+
+**Which test is best?**
+
+When working with small sample sizes or categorical data with a small number of cells, Fisher's exact test is a better choice. When the sample size is large, the chi-square test is a valid and computationally efficient option. Surprise in results: Given the high p-values ​​(0.7949) for both tests, there is not enough evidence to reject the null hypothesis of independence.
+
+This suggests that there is no significant relationship between X and Y based on the observed data. Lack of surprise: These results are consistent with expectations if the variables were expected to be independent or if there is no theoretical reason to expect the variables to be dependent.
+
+ **Statistical tests can only provide evidence against the null hypothesis.**
+
+They are unable to prove their independence. Lack of evidence for independence does not necessarily mean that the variables are independent. Still, it does indicate that there is not enough evidence to claim dependence based on the observed data.
+
+## Question 2
+
+Read the training dataset from the disc. The dataset was downloaded from kaggle.com
+
+```{r}
+df_train <- read.csv('https://raw.githubusercontent.com/jewelercart/605/main/train.csv')
+head(df_train, 3)
+```
+
+```{r}
+glimpse(df_train)
+```
+
+It can be seen that the dataset has 10 columns. Since we are interested to find the age of any crab. Therefore, 'Age' is dependent variable and all others can be independent variable. The age of a crab does not depend on its sex so sex won;t be our independent variable. Length, Weight, Diameter, Height, etc. can be our independent variable.
+
+### Task 1.
+
+Descriptive and Inferential Statistics. Provide univariate descriptive statistics and appropriate plots for the training data set. Provide a scatterplot matrix for at least two of the independent variables and the dependent variable. Derive a correlation matrix for any three quantitative variables in the dataset. Test the hypotheses that the correlations between each pairwise set of variables is 0 and provide an 80% confidence interval. Discuss the meaning of your analysis. Would you be worried about familywise error? Why or why not?
+
+**Descriptive Statistics of the training dataset**
+
+```{r}
+summary(df_train)
+```
+
+**Scatterplot Matrix of independent variables**
+
+```{r}
+library(patchwork)
+p1 <- ggplot(data=df_train, mapping = aes(x= Length, y= Age))+
+  geom_point(aes(color=Sex))
+p2 <- ggplot(data=df_train, mapping = aes(x= Weight, y= Age))+
+  geom_point(aes(color=Sex))
+p3 <- ggplot(data=df_train, mapping = aes(x= Height, y= Age))+
+  geom_point(aes(color=Sex))
+p4 <- ggplot(data=df_train, mapping = aes(x= Diameter, y= Age))+
+  geom_point(aes(color=Sex))
+p1+p2+p3+p4+plot_layout(ncol=2)
+
+```
+
+**Correlation matrix of three quantitative variables**
+
+Let's consider the variables Age, Height, Length as three quantitative variables. The correlation matrix is given below:
+
+```{r}
+correlation_matrix <- cor(df_train[ c("Age", "Height", "Length")])
+correlation_matrix
+```
+
+Let's proceed to pair-wise correlation test
+
+```{r}
+cor.test(~ Height+Length, data=df_train, method='pearson', conf.level=0.95)
+```
+
+The p-value is close to 0 but not zero and correlation between Height and Length is 0.9183517
+
+```{r}
+cor.test(~ Height+ Age, data=df_train, method='pearson', con_level = 0.95)
+```
+
+```{r}
+cor.test(~Age+Weight, data=df_train, method='pearson', con_level = 0.95)
+```
+
+**Null hypothesis**: There is no correlation between the variables.
+
+Since the p-value value is less than 0.05, therefore, null hypothesis is rejected and it can be concluded based on the statistics test that there exist correlation between the variables. Yes, familywise error might be there in the analysis and to avoid the error, we can add some cautionary steps in the linear regression equation.
+
+### Task 2. Linear Algebra and Correlation.
+
+Invert your correlation matrix from above. (This is known as the precision matrix and contains variance inflation factors on the diagonal.) Multiply the correlation matrix by the precision matrix, and then multiply the precision matrix by the correlation matrix. Conduct **LDU** decomposition on the matrix. 
+
+```{r}
+pr_matrix <- solve(correlation_matrix)
+pr_matrix%*%correlation_matrix
+
+```
+
+```{r}
+correlation_matrix %*% pr_matrix
+```
+
+**LDU decomposition of correlation matrix**
+
+```{r}
+dec_mat <-lu(correlation_matrix)
+dec_mat
+```
+
+### Task 3.  *Calculus-Based Probability & Statistics*
+
+Many times, it makes sense to fit a closed form distribution to data.  Select a variable in the Kaggle.com training dataset that is skewed to the right, shift it so that the minimum value is absolutely above zero if necessary.  Then load the MASS package and run fitdistr to fit an exponential probability density function.  (See  <https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/fitdistr.html> ).  Find the optimal value of l for this distribution, and then take 1000 samples from this exponential distribution using this value (e.g., rexp(1000, l)).  Plot a histogram and compare it with a histogram of your original variable.   Using the exponential pdf, find the 5^th^ and 95^th^ percentiles using the cumulative distribution function (CDF).   Also generate a 95% confidence interval from the empirical data, assuming normality.  Finally, provide the empirical 5^th^ percentile and 95^th^ percentile of the data.  Discuss.
+
+```{r}
+p1 <- ggplot(data=df_train, mapping = aes(x= Length))+
+  geom_histogram( color = 'blue', fill= 'green')
+p2 <- ggplot(data=df_train, mapping = aes(x= Weight))+
+  geom_histogram( color = 'blue', fill= 'pink')
+p3 <- ggplot(data=df_train, mapping = aes(x= Height))+
+  geom_histogram( color = 'blue', fill= 'yellow')
+p4 <- ggplot(data=df_train, mapping = aes(x= Diameter))+
+  geom_histogram( color = 'blue', fill= 'orange')
+p1+p2+p3+p4+plot_layout(ncol=2)
+```
+
+**Distribution of the variable 'Length' , 'Diameter' are left skewed, Distribution of height seems symmetric but distribution of Weight is right skewed.**
+
+```{r}
+p1 <- ggplot(data=df_train, mapping = aes(x= Age))+
+  geom_histogram( color = 'blue', fill= 'green')
+p2 <- ggplot(data=df_train, mapping = aes(x= Shucked.Weight))+
+  geom_histogram( color = 'blue', fill= 'pink')
+p3 <- ggplot(data=df_train, mapping = aes(x= Viscera.Weight))+
+  geom_histogram( color = 'blue', fill= 'yellow')
+p4 <- ggplot(data=df_train, mapping = aes(x= Shell.Weight))+
+  geom_histogram( color = 'blue', fill= 'orange')
+p1+p2+p3+p4+plot_layout(ncol=2)
+```
+
+All the above variables "Shucked.Weight" "Viscera.Weight" "Shell.Weight" and "Age" are approximately right skewed.
+
+We can consider 'Weight' for the fit exponential distribution.
+
+```{r}
+w_exp <- fitdistr(df_train$Weight, densfun = 'exponential')
+lambda <- w_exp$estimate['rate']
+cat("lambda: \n\n", lambda)
+```
+
+```{r}
+w_sample <- rexp(1000, lambda)
+hist(w_sample, main="Sample Distribution of Weight", col = 'yellow', xlab = "Sample Weight", breaks = 70, xlim= c(0, 100))
+```
+
+Both the histograms of original and sample data are right skewed but original data produced a thick left tail while sampled data has thin left tail.
+
+**5th and 95th percentile using CDF**
+
+```{r}
+per_5th <- qexp(0.05, lambda)
+per_95th <- qexp(0.95, lambda)
+cat("5th percentile: ", per_5th)
+cat("\n95th percentile: ", per_95th)
+```
+
+**Confidence intervals using the empirical data**
+
+The 95% confidence interval can be found using the sampled data or the original data. I'll prefer the sampled data since 5th and 95th percentiles are calculated using the sampled data.
+
+```{r}
+library(infer)
+w_sample <- data.frame(w_sample)
+set.seed(1000)
+ci_diff <- w_sample %>%
+get_ci(level = 0.95)
+lower<- ci_diff$lower_ci
+upper<- ci_diff$upper_ci
+sprintf("95 percent confidence interval is [%.4f, %.4f]", lower, upper)
+##
+```
+
+The two confidence interval differ a little. The confidence interval based on the normal distribution is a little wide while CDF gives narrow confidence interval. Also, it can be seen that CI based on CDF of exponential distribution lies wholly within the CI based on normal distribution.
+
+### Task 4. Modelling 
+
+Build some type of *multiple* regression  model and **submit your model** to the competition board.  Provide your complete model summary and results with analysis.  **Report your Kaggle.com user name and score.**
+
+```{r}
+ reg_model <- lm(Age~ Height+Weight+Diameter+Length+Height*Length, data = df_train)
+ summary(reg_model)
+
+```
+
+**Test the model**
+
+```{r}
+df_test <- read.csv("https://raw.githubusercontent.com/jewelercart/605/main/test.csv")
+pred_Age <- predict(reg_model, df_test)
+pred_Age[1:10]
+```
